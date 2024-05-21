@@ -127,12 +127,6 @@
       :visible.sync="showAdd"
       @done="reload"/>
 
-    <recharge
-        :visible.sync="rechargevisible"
-        :recharge_type="rechargeType"
-        :user_id="userId"
-        @done="reload"
-    />
   </div>
 
 </template>
@@ -140,11 +134,10 @@
 <script>
 import { mapGetters } from "vuex";
 import agetAdd from './aget-add';
-import recharge from '../../member/member/recharge.vue';
 
 export default {
   name: 'Agent',
-  components: {agetAdd,recharge},
+  components: {agetAdd},
   computed: {
     ...mapGetters(["permission"]),
   },
