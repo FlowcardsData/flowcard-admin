@@ -66,17 +66,6 @@
         :columns="columns"
         :selection.sync="selection"
         height="calc(100vh - 315px)">
-        <!-- 表头工具栏 -->
-        <template slot="toolbar">
-          <el-button
-            @click="openAdd()"
-            type="primary"
-            icon="el-icon-plus"
-            class="ele-btn-icon"
-            size="small"
-            v-if="permission.includes('sys:agent:add')">添加
-          </el-button>
-        </template>
         <!-- 头像 -->
         <template slot="avatar" slot-scope="{row}">
           <el-image :src="row.avatar"  style="width: 35px;" :preview-src-list="[row.avatar]">
@@ -107,12 +96,6 @@
             </el-link>
           </el-popconfirm>
 
-          <el-popconfirm class="ele-action" title="撤销后将自动撤销金币卡/会员卡，确定吗？" @confirm="editStatus(row, 3)"
-                         v-if="permission.includes('sys:agent:status') && (row.status == 1 || row.status == 2)">
-            <el-link type="danger" slot="reference" :underline="false" icon="el-icon-warning-outline">撤销
-            </el-link>
-          </el-popconfirm>
-
         </template>
 
         <template slot="cat_coin" slot-scope="{row}">
@@ -120,12 +103,6 @@
         </template>
       </ele-pro-table>
     </el-card>
-    <!-- 添加弹窗 -->
-    <aget-add
-      :agentLevelOptions="agentLevelOptions"
-      :data="current"
-      :visible.sync="showAdd"
-      @done="reload"/>
 
   </div>
 
@@ -164,13 +141,6 @@ export default {
           fixed: "left"
         },
         {
-          prop: 'agent_level',
-          label: '等级标识',
-          align: 'center',
-          showOverflowTooltip: true,
-          fixed: "left"
-        },
-        {
           prop: 'username',
           label: '用户账号',
           align: 'center',
@@ -193,22 +163,22 @@ export default {
           slot: 'avatar'
         },
         {
-          prop: 'sale_coin',
-          label: '已售金币',
+          prop: 'agent_level',
+          label: '等级标识',
           align: 'center',
           showOverflowTooltip: true,
-          minWidth: 120,
+          fixed: "left"
         },
         {
           prop: 'sale_vip',
-          label: '已售VIP卡(张)',
+          label: '已售数量(张)',
           align: 'center',
           showOverflowTooltip: true,
           minWidth: 120,
         },
         {
           prop: 'cat_coin',
-          label: '金币余额',
+          label: '余额',
           align: 'center',
           showOverflowTooltip: true,
           minWidth: 120,
@@ -251,8 +221,6 @@ export default {
       // 是否显示编辑弹窗
       showEdit: false,
       rechargevisible:false,
-      // 是否显示添加弹窗
-      showAdd: false,
       // 是否显示导入弹窗
       showImport: false,
       agentLevelOptions:null, // 创作者等级
@@ -280,10 +248,6 @@ export default {
     reset() {
       this.where = {};
       this.reload();
-    },
-    /* 显示添加 */
-    openAdd() {
-      this.showAdd = true;
     },
 
     /* 删除 */
