@@ -60,6 +60,7 @@
       </ele-pro-table>
       <!-- 详情弹窗 -->
       <detail :visible.sync="showInfo" :videoid="videoid" @done="reload" />
+      <add :visible.sync="showAdd"  @done="reload"  :rowdata="current"/>
     </el-card>
   </div>
 </template>
@@ -67,10 +68,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import detail from "../detail.vue";
+import add from "./add.vue";
 
 export default {
   name: 'TranscodingPanel',
-  components: { detail },
+  components: { detail,add },
   props: {
     sectionStatusOptions: {
       type: Array,
@@ -83,6 +85,7 @@ export default {
     return {
       // 是否显示查看弹窗
       showInfo: false,
+      showAdd: false,
       videoid: 0,
       showType: '3',
       // 表格搜索条件
@@ -194,7 +197,7 @@ export default {
   },
   methods: {
     openAdd() {
-      // this.showAdd = true;
+      this.showAdd = true;
     },
     /* 详情 */
     openDetail(videoid) {

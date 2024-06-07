@@ -10,7 +10,7 @@
             </el-form-item>
           </el-col>
           <el-col :lg="6" :md="12">
-            <el-form-item label="订单标识:">
+            <el-form-item label="订单号:">
               <el-input clearable v-model="where.order_sn" placeholder="请输入订单标识" />
             </el-form-item>
           </el-col>
@@ -45,10 +45,6 @@
           </el-tag>
         </template>
 
-        <!-- 支付类型 -->
-        <template slot="pay_type" slot-scope="{row}">
-            <el-tag v-if="row.pay_type == 'self'" type="primary" size="small">官方通道</el-tag>
-        </template>
 
         <template slot="discount" slot-scope="{row}" v-if="row.discount">
           {{row.discount}}折
@@ -102,13 +98,13 @@ export default {
         },
         {
           prop: 'order_sn',
-          label: '订单标识',
+          label: '订单号',
           minWidth: 200,
           align: 'center',
         },
         {
           prop: 'price',
-          label: '实际支付',
+          label: '佣金',
           showOverflowTooltip: true,
           minWidth: 120,
           align: 'center',
@@ -121,13 +117,6 @@ export default {
           align: 'center',
         },
         {
-          prop: 'discount',
-          label: '折扣',
-          showOverflowTooltip: true,
-          align: 'center',
-          slot: 'discount',
-        },
-        {
           prop: 'status',
           label: '订单状态',
           minWidth: 120,
@@ -135,16 +124,8 @@ export default {
           slot:'status',
         },
         {
-          prop: 'pay_type',
-          label: '支付类型',
-          showOverflowTooltip: true,
-          minWidth: 120,
-          align: 'center',
-          slot: 'pay_type',
-        },
-        {
           prop: 'pay_time',
-          label: '支付时间',
+          label: '下单时间',
           showOverflowTooltip: true,
           minWidth: 160,
           align: 'center',

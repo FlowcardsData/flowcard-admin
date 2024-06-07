@@ -110,11 +110,10 @@
 
 <script>
 import { mapGetters } from "vuex";
-import agetAdd from './aget-add';
 
 export default {
   name: 'Agent',
-  components: {agetAdd},
+  components: {},
   computed: {
     ...mapGetters(["permission"]),
   },
