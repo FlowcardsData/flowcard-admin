@@ -1,5 +1,5 @@
 <template>
-  <div class="panel">
+  <div class="ele-body">
     <el-card shadow="never">
       <!-- 搜索表单 -->
       <el-form :model="where" label-width="77px" class="ele-form-search" @keyup.enter.native="reload"
@@ -24,17 +24,20 @@
         height="calc(100vh - 315px)">
         <!-- 表头工具栏 -->
         <template slot="toolbar">
-          <el-button @click="openAdd()" type="primary" icon="el-icon-plus" class="ele-btn-icon" size="small"
-            v-if="permission.includes('sys:agent:add')">添加
+          <el-button size="small" type="primary" icon="el-icon-plus" class="ele-btn-icon" @click="openEdit(null)"
+            v-if="permission.includes('sys:ad:add')">添加
+          </el-button>
+          <el-button size="small" type="danger" icon="el-icon-delete" class="ele-btn-icon" @click="removeBatch"
+            v-if="permission.includes('sys:ad:dall')">删除
           </el-button>
         </template>
         <!-- 操作列 -->
         <template slot="action" slot-scope="{row}">
+          <el-link type="primary" :underline="false" icon="el-icon-edit" @click="openEdit(row)"
+            v-if="permission.includes('sys:ad:edit')">修改
+          </el-link>
           <el-link type="primary" :underline="false" icon="el-icon-view" @click="openDetail(row.id)"
             v-if="permission.includes('sys:operlog:detail')">查看详情
-          </el-link>
-          <el-link type="primary" slot="reference" @click="set_lower_2(row)" :underline="false"
-            icon="el-icon-circle-close">下架
           </el-link>
         </template>
 
@@ -53,14 +56,14 @@
           </el-tag>
         </template>
 
-        <template slot="status">
-          <el-tag type="success" size="small">上架中</el-tag>
+        <template slot="status" slot-scope="{row}">
+          <el-switch v-model="row.status" @change="set_lower_2(row)" :active-value="1" :inactive-value="0" />
         </template>
 
       </ele-pro-table>
       <!-- 详情弹窗 -->
       <detail :visible.sync="showInfo" :videoid="videoid" @done="reload" />
-      <add :visible.sync="showAdd"  @done="reload"  :rowdata="current"/>
+      <add :visible.sync="showAdd" @done="reload" :rowdata="current" />
     </el-card>
   </div>
 </template>
@@ -72,7 +75,7 @@ import add from "./add.vue";
 
 export default {
   name: 'TranscodingPanel',
-  components: { detail,add },
+  components: { detail, add },
   props: {
     sectionStatusOptions: {
       type: Array,
@@ -129,14 +132,14 @@ export default {
           align: 'center'
         },
         {
-          prop: 'tag_arr',
-          label: '标签',
-          minWidth: 120,
+          prop: 'price',
+          label: '佣金金额',
+          minWidth: 100,
           align: 'center',
         },
         {
           prop: 'status',
-          label: '状态',
+          label: '是否上架',
           showOverflowTooltip: true,
           minWidth: 100,
           align: 'center',
@@ -173,19 +176,6 @@ export default {
       selection: [],
       // 当前编辑数据
       current: null,
-      // 是否显示编辑弹窗
-      showEdit: false,
-      showRefuseEdit: false,
-      infoData: null,
-      playUrl: '', // TODO: 替换为状态书获取
-      isPlayDialog: false, //播放弹窗
-      upVideo: {},
-      isGvDialog: false,
-      videoStatusOptions: null,
-      isLowerOptions: null, //视频上下架状态
-      dvid: 0,
-      uid: 0,
-      uploadType: 'minio'
     };
   },
   computed: {
@@ -197,6 +187,10 @@ export default {
   },
   methods: {
     openAdd() {
+      this.showAdd = true;
+    },
+    openEdit(row) {
+      this.current = row;
       this.showAdd = true;
     },
     /* 详情 */
@@ -250,55 +244,20 @@ export default {
       this.$confirm('确定要删除选中的视频吗?', '提示', {
         type: 'warning'
       }).then(() => {
-        const loading = this.$loading({ lock: true });
-        this.$http.post('/video/delete', { id: this.selection.map(d => d.id) }).then(res => {
-          loading.close();
-          if (res.data.code === 0) {
-            this.$message.success(res.data.msg);
-            this.reload();
-          } else {
-            this.$message.error(res.data.msg);
-          }
-        }).catch(e => {
-          loading.close();
-          this.$message.error(e.message);
-        });
+        // const loading = this.$loading({ lock: true });
+        // this.$http.post('/video/delete', { id: this.selection.map(d => d.id) }).then(res => {
+        //   loading.close();
+        //   if (res.data.code === 0) {
+        //     this.$message.success(res.data.msg);
+        //     this.reload();
+        //   } else {
+        //     this.$message.error(res.data.msg);
+        //   }
+        // }).catch(e => {
+        //   loading.close();
+        //   this.$message.error(e.message);
+        // });
       }).catch(() => { });
-    },
-
-    /* 更改是否催更状态 */
-    setIsUrge(row) {
-      const loading = this.$loading({ lock: true });
-      let params = Object.assign({
-        "id": row.id,
-        "is_urge": row.is_urge
-      })
-      this.$http.post('/video/setIsUrge', params).then(res => {
-        loading.close();
-        if (res.data.code === 0) {
-          this.$message.success(res.data.msg);
-        } else {
-          row.is_urge = !row.is_urge ? 1 : 2;
-          this.$message.error(res.data.msg);
-        }
-      }).catch(e => {
-        loading.close();
-        this.$message.error(e.message);
-      });
-    },
-    // 获取配置信息；确认上传方式
-    getUploadType() {
-      this.$http.get('/index/getConfig').then(res => {
-        console.log('res is', res)
-        console.log(res.data.data.upload.video_up_type)
-        if (res && res.data && res.data.data.code === 0) {
-          this.uploadType = res.data.data.upload.video_up_type || 'minio'
-        } else {
-          this.$message.error(res.data.msg);
-        }
-      }).catch(e => {
-        this.$message.error(e.message);
-      });
     },
   }
 }

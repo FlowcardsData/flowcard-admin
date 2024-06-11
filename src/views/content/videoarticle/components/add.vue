@@ -3,20 +3,63 @@
     width="880px" @update:visible="updateVisible">
     <el-form ref="form" :model="form" :rules="rules" label-width="150px">
       <el-row :gutter="15">
-        <el-form-item label="选择产品:" prop="extend_offset_coins">
+        <!-- <el-form-item label="选择产品:" prop="extend_offset_coins">
           <el-tag v-if="this.selectMemberData">
             {{ selectMemberData.nickname }}
           </el-tag>
           <el-button style="margin-left: 10px" type="success" class="ele-btn-icon"
             @click="openSelectMember()">请选择</el-button>
+        </el-form-item> -->
+
+        <el-form-item label="标题:" prop="title">
+          <el-input clearable :maxlength="150" v-model="form.title" placeholder="请输入标题" />
+        </el-form-item>
+        <el-row :gutter="15">
+          <el-col :sm="12">
+            <el-form-item label="商品编码:"  prop="id">
+              <el-input clearable :maxlength="50" v-model="form.id" placeholder="请输入商品编码" />
+            </el-form-item>
+            <el-form-item label="上架状态:" prop="status">
+              <el-radio-group v-model="form.status">
+                <el-radio :label="1">开启</el-radio>
+                <el-radio :label="2">关闭</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="主图:" prop="img">
+              <uploadImage :limit="1" v-model="form.img"></uploadImage>
+            </el-form-item>
+          </el-col>
+          <el-col :sm="12">
+            <el-form-item label="佣金:" prop="price">
+              <el-input-number v-model="form.price" controls-position="right" :min="0" :max="1000" placeholder="请输入佣金"
+                class="ele-fluid ele-text-left" />
+            </el-form-item>
+            <el-form-item label="结算规则:" prop="rule">
+              <el-radio-group v-model="form.rule">
+                <el-radio :label="1">次月结</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="副图:">
+              <uploadImage :limit="1" v-model="form.img2"></uploadImage>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+
+
+        <el-form-item label="简介:" prop="desc">
+          <el-input :rows="2" clearable type="textarea" :maxlength="150" v-model="form.desc" placeholder="请输入简介" />
+        </el-form-item>
+        <el-form-item label="简介2:">
+          <el-input :rows="2" clearable type="textarea" :maxlength="150" v-model="form.desc2" placeholder="请输入简介" />
+        </el-form-item>
+        <el-form-item label="简介3:">
+          <el-input :rows="2" clearable type="textarea" :maxlength="150" v-model="form.desc3" placeholder="请输入简介" />
         </el-form-item>
 
-        <el-form-item label="上架状态:" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio :label="1">开启</el-radio>
-            <el-radio :label="2">关闭</el-radio>
-          </el-radio-group>
-        </el-form-item>
+
+
+
         <el-form-item label="备注:">
           <el-input :rows="3" clearable type="textarea" :maxlength="125" v-model="form.remarks" placeholder="请输入备注" />
         </el-form-item>
@@ -32,9 +75,10 @@
 </template>
 
 <script>
+import uploadImage from '@/components/uploadImage'
 export default {
   name: 'giftEdit',
-  components: {},
+  components: { uploadImage },
   props: {
     // 弹窗是否打开
     visible: Boolean,
@@ -47,11 +91,23 @@ export default {
       // 是否显示编辑弹窗
       showSelectMember: false,
       // 表单数据
-      form: Object.assign({ status: 1 }, this.data),
+      form: Object.assign({ status: 1, rule: 1 }, this.data),
       // 表单验证规则
       rules: {
+        id: [
+          { required: true, message: '请输入编码', trigger: 'blur' }
+        ],
         title: [
-          { required: true, message: '请输入权益等级名称', trigger: 'blur' }
+          { required: true, message: '请输入标题', trigger: 'blur' }
+        ],
+        desc: [
+          { required: true, message: '请输入标题', trigger: 'blur' }
+        ],
+        price: [
+          { required: true, message: '请输入标题', trigger: 'blur' }
+        ],
+        img: [
+          { required: true, message: '请输入银行图标', trigger: 'blur' }
         ],
         status: [
           { required: true, message: '请选择状态', trigger: 'blur' }
@@ -77,20 +133,6 @@ export default {
     }
   },
   methods: {
-    getTagType(type) {
-      // 根据 register 的某个条件来返回相应的 type
-      if (type === 1) {
-        return 'success';
-      } else if (type === 2) {
-        return 'warning';
-      } else {
-        return 'danger';
-      }
-    },
-    handleCustomEvent(data) {
-      this.selectMemberData = data;
-      this.selectMemberId = this.selectMemberData.user_id;
-    },
     // 上传图片成功
     handleUpload({ oss_type }) {
       this.form.oss_type = oss_type;
@@ -99,38 +141,31 @@ export default {
     openSelectMember() {
       this.showSelectMember = true;
     },
-    /* 下拉树格式化 */
-    normalizer(d) {
-      return {
-        id: d.id,
-        label: d.name,
-        children: d.children || undefined
-      };
-    },
     /* 保存编辑 */
     save() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          this.loading = true;
-          this.form.member_id = this.selectMemberId;
-          this.$http.post('/agent/edit', {
-            ...this.form
-          }).then(res => {
-            this.loading = false;
-            if (res.data.code === 0) {
-              this.$message.success(res.data.msg);
-              if (!this.isUpdate) {
-                // this.form = {};
-              }
-              this.updateVisible(false);
-              this.$emit('done');
-            } else {
-              this.$message.error(res.data.msg);
-            }
-          }).catch(e => {
-            this.loading = false;
-            this.$message.error(e.message);
-          });
+          console.log(valid, this.form);
+          // this.loading = true;
+          // this.form.member_id = this.selectMemberId;
+          // this.$http.post('/agent/edit', {
+          //   ...this.form
+          // }).then(res => {
+          //   this.loading = false;
+          //   if (res.data.code === 0) {
+          //     this.$message.success(res.data.msg);
+          //     if (!this.isUpdate) {
+          //       // this.form = {};
+          //     }
+          //     this.updateVisible(false);
+          //     this.$emit('done');
+          //   } else {
+          //     this.$message.error(res.data.msg);
+          //   }
+          // }).catch(e => {
+          //   this.loading = false;
+          //   this.$message.error(e.message);
+          // });
         } else {
           return false;
         }
