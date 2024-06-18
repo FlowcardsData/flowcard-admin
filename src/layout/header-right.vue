@@ -6,7 +6,7 @@
       <i :class="fullscreen ? 'el-icon-_screen-restore' : 'el-icon-_screen-full'"></i>
     </div>
     <!-- 语言切换 -->
-    <!-- <div class="ele-admin-header-tool-item">
+  <!-- <div class="ele-admin-header-tool-item">
       <el-dropdown placement="bottom" @command="changeLanguage">
         <i class="el-icon-_language"></i>
         <el-dropdown-menu slot="dropdown">
@@ -21,16 +21,16 @@
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-    </div> -->
+      </div> -->
     <!-- 消息通知 -->
-    <!-- <div class="ele-admin-header-tool-item">
+  <!-- <div class="ele-admin-header-tool-item">
       <ele-notice/>
-    </div> -->
+      </div> -->
     <!-- 用户信息 -->
     <div class="ele-admin-header-tool-item">
       <el-dropdown @command="onUserDropClick">
         <div class="ele-admin-header-avatar">
-          <el-avatar :src="loginUser.avatar"/>
+          <el-avatar :src="loginUser.avatar" />
           <span class="hidden-xs-only">{{ loginUser.nickname }}</span>
           <i class="el-icon-arrow-down hidden-xs-only"></i>
         </div>
@@ -48,15 +48,15 @@
       </el-dropdown>
     </div>
     <!-- 主题设置 -->
-    <!-- <div v-if="showSetting" class="ele-admin-header-tool-item" @click="openSetting">
+  <!-- <div v-if="showSetting" class="ele-admin-header-tool-item" @click="openSetting">
       <i class="el-icon-_more"></i>
-    </div> -->
+      </div> -->
   </div>
 </template>
 
 <script>
 // import EleNotice from './notice';
-import {isFullscreen, toggleFullscreen} from 'ele-admin/packages/util';
+import { isFullscreen, toggleFullscreen } from 'ele-admin/packages/util';
 
 export default {
   name: 'EleHeaderRight',
@@ -93,21 +93,12 @@ export default {
         this.$confirm(
           this.$t('layout.logout.message'),
           this.$t('layout.logout.title'),
-          {type: 'warning'}
+          { type: 'warning' }
         ).then(() => {
-          // 调用接口退出登录
-          this.$http.get('/login/logout').then(res => {
-            if (res.data.code === 0) {
-              // 清除缓存的token
-              this.$store.dispatch('user/removeToken').then(() => {
-                // location.replace('/login');  // 这样跳转避免再次登录重复注册动态路由
-                location.replace('/admin/#/login');
-              });
-            } else {
-              this.$message.error(res.data.msg);
-            }
-          }).catch((e) => {
-            this.$message.error(e.message);
+          // 清除缓存的token
+          this.$store.dispatch('user/removeToken').then(() => {
+            // location.replace('/login');  // 这样跳转避免再次登录重复注册动态路由
+            location.replace('/admin/#/login');
           });
 
         }).catch(() => {

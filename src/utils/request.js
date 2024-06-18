@@ -61,7 +61,7 @@ const requestConf = (config) => {
 
   // 规范写法 不可随意自定义
   // if (token) config.headers['Authorization'] = `Bearer ${token}`
-  if (token) config.headers['Authorization'] = token
+  if (token) config.headers['token'] = token
 
   if (
     config.data &&
@@ -164,7 +164,7 @@ const handleData = async ({ config, data, status = 0, statusText }) => {
  * @description axios初始化
  */
 const instance = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL,
+  baseURL:'http://101.200.83.211:3003/',
   // baseURL,
   timeout: requestTimeout,
   headers: {

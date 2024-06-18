@@ -15,16 +15,8 @@
       <recommendPanel
         ref="table"
         v-if="showType == 3"
-        :sectionStatusOptions="sectionStatusOptions"
-        @viewVideo="clickPlay"
       />
 
-      <!-- 不推荐 -->
-      <notRecommendedPanel
-        ref="table"
-        v-if="showType == 70"
-        :sectionStatusOptions="sectionStatusOptions"
-      />
 
     </el-card>
 
@@ -178,16 +170,6 @@ export default {
   },
   created() {
     this.where.show_type = this.show_type;
-    /* this.getDicts("video_status").then(response => {
-       this.videoStatusOptions = response.data;
-     });*/
-    /*this.getDicts("user_video_is_lower").then(response => {
-      this.isLowerOptions = response.data;
-    });*/
-    this.getDicts("section_video_status").then(response => {
-      this.sectionStatusOptions = response.data;
-    });
-    // this.getUploadType()
   },
   methods: {
     // 编辑视频

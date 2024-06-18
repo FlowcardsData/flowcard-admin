@@ -2,7 +2,8 @@
   <div class="ele-body">
     <el-card shadow="never">
       <!-- 搜索表单 -->
-      <el-form :model="where" label-width="77px" class="ele-form-search" @keyup.enter.native="reload" @submit.native.prevent>
+      <el-form :model="where" label-width="77px" class="ele-form-search" @keyup.enter.native="reload"
+        @submit.native.prevent>
         <el-row :gutter="15">
           <el-col :lg="4" :md="12">
             <el-form-item label="用户ID:">
@@ -31,27 +32,30 @@
         </el-row>
       </el-form>
       <!-- 数据表格 -->
-      <ele-pro-table ref="table" :where="where" :datasource="url" :columns="columns" :selection.sync="selection" height="calc(100vh - 315px)">
+      <ele-pro-table ref="table" :parse-data="parseData" :where="where" :datasource="url" :columns="columns"
+        :selection.sync="selection" height="calc(100vh - 315px)">
         <!-- 表头工具栏 -->
         <template slot="toolbar">
-          <el-button size="small" type="danger" icon="el-icon-delete" class="ele-btn-icon" @click="removeBatch" v-if="permission.includes('sys:giftorder:delete')">删除
+          <el-button size="small" type="danger" icon="el-icon-delete" class="ele-btn-icon" @click="removeBatch"
+            v-if="permission.includes('sys:giftorder:delete')">删除
           </el-button>
         </template>
 
         <!-- 状态 -->
         <template slot="status" slot-scope="{row}">
-          <el-tag :type="['warning', 'success', 'success', 'info'][row.status-1]" size="mini">
+          <el-tag :type="['warning', 'success', 'success', 'info'][row.status - 1]" size="mini">
             {{ statusFormat(row) }}
           </el-tag>
         </template>
 
 
         <template slot="discount" slot-scope="{row}" v-if="row.discount">
-          {{row.discount}}折
+          {{ row.discount }}折
         </template>
         <!-- 操作列 -->
         <template slot="action" slot-scope="{row}">
-          <el-link type="primary" :underline="false" icon="el-icon-edit" @click="openEdit(row)" v-if="permission.includes('sys:giftorder:status')">修改
+          <el-link type="primary" :underline="false" icon="el-icon-edit" @click="openEdit(row)"
+            v-if="permission.includes('sys:giftorder:status')">修改
           </el-link>
         </template>
       </ele-pro-table>
@@ -72,101 +76,108 @@ export default {
   },
   data() {
     return {
+      /* 解析接口返回数据 */
+      parseData(res) {
+        console.log(res, 'res');
+        return {
+          data: res.data.orderList,
+          code: 0
+        };
+      },
+      where: { 'currentPage': 1, 'pageSize': 100, "platformType": 2 },
       // 表格数据接口
-      url: '/GiftOrder/index',
+      url: '/backend/order/list',
       // 表格列配置
       columns: [{
-          columnKey: 'selection',
-          type: 'selection',
-          width: 45,
-          align: 'center',
-          fixed: "left"
-        },
-        {
-          prop: 'id',
-          label: 'ID',
-          width: 60,
-          align: 'center',
-          showOverflowTooltip: true,
-          fixed: "left"
-        },
-        {
-          prop: 'member_id',
-          label: '用户ID',
-          width: 100,
-          align: 'center',
-        },
-        {
-          prop: 'order_sn',
-          label: '订单号',
-          minWidth: 200,
-          align: 'center',
-        },
-        {
-          prop: 'price',
-          label: '佣金',
-          showOverflowTooltip: true,
-          minWidth: 120,
-          align: 'center',
-        },
-        {
-          prop: 'total_amount',
-          label: '总金额',
-          minWidth: 120,
-          showOverflowTooltip: true,
-          align: 'center',
-        },
-        {
-          prop: 'status',
-          label: '订单状态',
-          minWidth: 120,
-          align: 'center',
-          slot:'status',
-        },
-        {
-          prop: 'pay_time',
-          label: '下单时间',
-          showOverflowTooltip: true,
-          minWidth: 160,
-          align: 'center',
-          formatter: (row, column, cellValue) => {
-            return this.$util.toDateString(cellValue);
-          }
-        },
-        {
-          prop: 'create_time',
-          label: '创建时间',
-          sortable: 'custom',
-          showOverflowTooltip: true,
-          minWidth: 160,
-          align: 'center',
-          formatter: (row, column, cellValue) => {
-            return this.$util.toDateString(cellValue);
-          }
-        },
-        {
-          prop: 'update_time',
-          label: '更新时间',
-          sortable: 'custom',
-          showOverflowTooltip: true,
-          minWidth: 160,
-          align: 'center',
-          formatter: (row, column, cellValue) => {
-            return this.$util.toDateString(cellValue);
-          }
-        },
-        {
-          columnKey: 'action',
-          label: '操作',
-          width: 150,
-          align: 'center',
-          resizable: false,
-          slot: 'action',
-          fixed: "right"
+        columnKey: 'selection',
+        type: 'selection',
+        width: 45,
+        align: 'center',
+        fixed: "left"
+      },
+      {
+        prop: 'id',
+        label: 'ID',
+        width: 60,
+        align: 'center',
+        showOverflowTooltip: true,
+        fixed: "left"
+      },
+      {
+        prop: 'member_id',
+        label: '用户ID',
+        width: 100,
+        align: 'center',
+      },
+      {
+        prop: 'order_sn',
+        label: '订单号',
+        minWidth: 200,
+        align: 'center',
+      },
+      {
+        prop: 'price',
+        label: '佣金',
+        showOverflowTooltip: true,
+        minWidth: 120,
+        align: 'center',
+      },
+      {
+        prop: 'total_amount',
+        label: '总金额',
+        minWidth: 120,
+        showOverflowTooltip: true,
+        align: 'center',
+      },
+      {
+        prop: 'status',
+        label: '订单状态',
+        minWidth: 120,
+        align: 'center',
+        slot: 'status',
+      },
+      {
+        prop: 'pay_time',
+        label: '下单时间',
+        showOverflowTooltip: true,
+        minWidth: 160,
+        align: 'center',
+        formatter: (row, column, cellValue) => {
+          return this.$util.toDateString(cellValue);
         }
+      },
+      {
+        prop: 'create_time',
+        label: '创建时间',
+        sortable: 'custom',
+        showOverflowTooltip: true,
+        minWidth: 160,
+        align: 'center',
+        formatter: (row, column, cellValue) => {
+          return this.$util.toDateString(cellValue);
+        }
+      },
+      {
+        prop: 'update_time',
+        label: '更新时间',
+        sortable: 'custom',
+        showOverflowTooltip: true,
+        minWidth: 160,
+        align: 'center',
+        formatter: (row, column, cellValue) => {
+          return this.$util.toDateString(cellValue);
+        }
+      },
+      {
+        columnKey: 'action',
+        label: '操作',
+        width: 150,
+        align: 'center',
+        resizable: false,
+        slot: 'action',
+        fixed: "right"
+      }
       ],
-      // 表格搜索条件
-      where: {},
       // 表格选中数据
       selection: [],
       // 当前编辑数据
@@ -179,9 +190,9 @@ export default {
   },
   created() {
     //订单状态
-    this.getDicts("equity_order_status").then(response => {
-      this.statusOptions = response.data;
-    });
+    // this.getDicts("equity_order_status").then(response => {
+    //   this.statusOptions = response.data;
+    // });
   },
   methods: {
     // 订单状态字典翻译
@@ -240,7 +251,7 @@ export default {
           loading.close();
           this.$message.error(e.message);
         });
-      }).catch(() => {});
+      }).catch(() => { });
     },
   }
 }

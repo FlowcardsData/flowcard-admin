@@ -14,18 +14,21 @@
         <el-form-item label="标题:" prop="title">
           <el-input clearable :maxlength="150" v-model="form.title" placeholder="请输入标题" />
         </el-form-item>
+        <el-form-item label="归属地:" prop="belonging_place">
+          <el-input-number clearable :maxlength="150" v-model="form.belonging_place" placeholder="请选择归属地" />
+        </el-form-item>
         <el-row :gutter="15">
           <el-col :sm="12">
-            <el-form-item label="商品编码:"  prop="id">
-              <el-input clearable :maxlength="50" v-model="form.id" placeholder="请输入商品编码" />
+            <el-form-item label="商品编码:" prop="code">
+              <el-input clearable :maxlength="50" v-model="form.code" placeholder="请输入商品编码" />
             </el-form-item>
             <el-form-item label="上架状态:" prop="status">
               <el-radio-group v-model="form.status">
                 <el-radio :label="1">开启</el-radio>
-                <el-radio :label="2">关闭</el-radio>
+                <el-radio :label="0">关闭</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="主图:" prop="img">
+            <el-form-item label="主图:">
               <uploadImage :limit="1" v-model="form.img"></uploadImage>
             </el-form-item>
           </el-col>
@@ -75,7 +78,7 @@
 </template>
 
 <script>
-import uploadImage from '@/components/uploadImage'
+import uploadImage from '@/components/uploadImage';
 export default {
   name: 'giftEdit',
   components: { uploadImage },
@@ -94,21 +97,21 @@ export default {
       form: Object.assign({ status: 1, rule: 1 }, this.data),
       // 表单验证规则
       rules: {
-        id: [
+        code: [
           { required: true, message: '请输入编码', trigger: 'blur' }
         ],
         title: [
           { required: true, message: '请输入标题', trigger: 'blur' }
         ],
         desc: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
+          { required: true, message: '请输入描述', trigger: 'blur' }
         ],
         price: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
+          { required: true, message: '请输入佣金', trigger: 'blur' }
         ],
-        img: [
-          { required: true, message: '请输入银行图标', trigger: 'blur' }
-        ],
+        // img: [
+        //   { required: true, message: '请输入图标', trigger: 'blur' }
+        // ],
         status: [
           { required: true, message: '请选择状态', trigger: 'blur' }
         ]
@@ -143,33 +146,64 @@ export default {
     },
     /* 保存编辑 */
     save() {
+      console.log(this.rowdata, 'this.rowdata');
+
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          console.log(valid, this.form);
-          // this.loading = true;
-          // this.form.member_id = this.selectMemberId;
-          // this.$http.post('/agent/edit', {
-          //   ...this.form
-          // }).then(res => {
-          //   this.loading = false;
-          //   if (res.data.code === 0) {
-          //     this.$message.success(res.data.msg);
-          //     if (!this.isUpdate) {
-          //       // this.form = {};
-          //     }
-          //     this.updateVisible(false);
-          //     this.$emit('done');
-          //   } else {
-          //     this.$message.error(res.data.msg);
-          //   }
-          // }).catch(e => {
-          //   this.loading = false;
-          //   this.$message.error(e.message);
-          // });
+          if (!this.isUpdate) {
+            const { img2 = '', desc2, desc3, status } = this.form
+            this.loading = true;
+            this.$http.post('/backend/card/add', {
+              cards: [{
+                ...this.form,
+                type: 1,
+                images: img2,
+                desc_two: desc2,
+                desc_three: desc3,
+                is_listing: status,
+              }]
+            }).then(res => {
+              this.loading = false;
+              console.log(res, 'res');
+              // if (res.data) {
+
+              // } else {
+              //   this.$message.error(res.errno);
+              // }
+            }).catch(e => {
+              this.loading = false;
+              this.$message.error(e.message);
+            });
+          } else {
+            const { img2 = '', desc2, desc3, status } = this.form
+            this.loading = true;
+            this.$http.post('/backend/card/update', {
+              ...this.form,
+              type: 1,
+              images: img2,
+              desc_two: desc2,
+              desc_three: desc3,
+              is_listing: status,
+            }).then(res => {
+              this.loading = false;
+              console.log(res, 'res');
+              // if (res.data) {
+
+              // } else {
+              //   this.$message.error(res.errno);
+              // }
+            }).catch(e => {
+              this.loading = false;
+              this.$message.error(e.message);
+            });
+          }
+
         } else {
           return false;
         }
       });
+
+
     },
 
     /* 更新visible */

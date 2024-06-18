@@ -2,56 +2,22 @@
   <div class="ele-body">
     <el-card shadow="never">
       <!-- 搜索表单 -->
-      <el-form
-        :model="where"
-        label-width="100px"
-        class="ele-form-search"
-        @keyup.enter.native="reload"
+      <el-form :model="where" label-width="100px" class="ele-form-search" @keyup.enter.native="reload"
         @submit.native.prevent>
         <el-row :gutter="25">
           <el-col :lg="5" :md="12">
             <el-form-item label="会员ID:">
-              <el-input
-                clearable
-                v-model="where.member_id"
-                placeholder="请输入会员ID"/>
+              <el-input clearable v-model="where.id" placeholder="请输入会员ID" />
             </el-form-item>
           </el-col>
           <el-col :lg="5" :md="12">
             <el-form-item label="会员账号:">
-              <el-input
-                clearable
-                v-model="where.username"
-                placeholder="请输入会员账号"/>
-            </el-form-item>
-          </el-col>
-          <el-col :lg="5" :md="12">
-            <el-form-item label="代理等级:">
-              <el-select clearable v-model="where.agent_level" placeholder="请选择代理等级" class="ele-fluid">
-                <el-option v-for="item in agentLevelOptions" :key="item.id" :label="item.name" :value="item.id" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :lg="5" :md="12">
-            <el-form-item label="状态:">
-              <el-select
-                clearable
-                v-model="where.status"
-                placeholder="请选择状态"
-                class="ele-fluid">
-                <el-option label="正常" value="1"/>
-                <el-option label="冻结" value="2"/>
-                <el-option label="撤销" value="3"/>
-              </el-select>
+              <el-input clearable v-model="where.user_name" placeholder="请输入会员账号" />
             </el-form-item>
           </el-col>
           <el-col :lg="6" :md="12">
             <div class="ele-form-actions">
-              <el-button
-                type="primary"
-                icon="el-icon-search"
-                class="ele-btn-icon"
-                @click="reload">查询
+              <el-button type="primary" icon="el-icon-search" class="ele-btn-icon" @click="reload">查询
               </el-button>
               <el-button @click="reset">重置</el-button>
             </div>
@@ -59,16 +25,11 @@
         </el-row>
       </el-form>
       <!-- 数据表格 -->
-      <ele-pro-table
-        ref="table"
-        :where="where"
-        :datasource="url"
-        :columns="columns"
-        :selection.sync="selection"
-        height="calc(100vh - 315px)">
+      <ele-pro-table ref="table" :need-page="false" :where="where" :datasource="url" :columns="columns"
+        :selection.sync="selection" height="calc(100vh - 315px)">
         <!-- 头像 -->
         <template slot="avatar" slot-scope="{row}">
-          <el-image :src="row.avatar"  style="width: 35px;" :preview-src-list="[row.avatar]">
+          <el-image :src="row.avatar" style="width: 35px;" :preview-src-list="[row.avatar]">
             <div slot="error" class="image-slot">
               <i class="el-icon-picture-outline" style="font-size: 35px;"></i>
             </div>
@@ -76,36 +37,29 @@
         </template>
         <!-- 状态列 -->
         <template slot="status" slot-scope="{row}">
-          <el-tag
-            :type="['success', 'primary', 'warning'][row.status-1]"
-            size="mini">
+          <el-tag :type="['success', 'primary', 'warning'][row.status - 1]" size="mini">
             {{ ['待审核', '正常', '冻结', '撤销'][row.status] }}
           </el-tag>
         </template>
         <!-- 操作列 -->
         <template slot="action" slot-scope="{row}">
           <el-popconfirm class="ele-action" title="确定冻结该代理商吗？" @confirm="editStatus(row, 2)"
-                v-if="permission.includes('sys:agent:status') && row.status == 1">
+            v-if="permission.includes('sys:agent:status') && row.status == 1">
             <el-link type="danger" slot="reference" :underline="false" icon="el-icon-warning-outline">冻结
             </el-link>
           </el-popconfirm>
 
           <el-popconfirm class="ele-action" title="确定解冻该代理商吗？" @confirm="editStatus(row, 1)"
-                         v-if="permission.includes('sys:agent:status') && row.status == 2">
+            v-if="permission.includes('sys:agent:status') && row.status == 2">
             <el-link type="success" slot="reference" :underline="false" icon="el-icon-success">解冻
             </el-link>
           </el-popconfirm>
 
         </template>
-
-        <template slot="cat_coin" slot-scope="{row}">
-          <el-button type="text" size="mini" @click.native.prevent="showRecharge(row.member_id, 'cat_coin')">{{ row.cat_coin }} </el-button>
-        </template>
       </ele-pro-table>
     </el-card>
 
   </div>
-
 </template>
 
 <script>
@@ -119,10 +73,11 @@ export default {
   },
   data() {
     return {
-      rechargeType:'',
-      userId:0,
+      rechargeType: '',
+      userId: 0,
       // 表格数据接口
-      url: '/agent/index',
+      where: { 'currentPage': 1, 'pageSize': 10 },
+      url: '/backend/user/list',
       // 表格列配置
       columns: [
         {
@@ -133,68 +88,61 @@ export default {
           fixed: "left"
         },
         {
-          prop: 'member_id',
+          prop: 'id',
           label: '用户ID',
           align: 'center',
           showOverflowTooltip: true,
           fixed: "left"
         },
         {
-          prop: 'username',
+          prop: 'user_name',
           label: '用户账号',
           align: 'center',
           showOverflowTooltip: true,
           minWidth: 110,
         },
         {
-          prop: 'nickname',
+          prop: 'nick_name',
           label: '用户昵称',
           align: 'center',
           showOverflowTooltip: true,
           minWidth: 100
         },
         {
-          columnKey: 'avatar',
-          label: '头像',
-          align: 'center',
-          showOverflowTooltip: true,
-          minWidth: 60,
-          slot: 'avatar'
-        },
-        {
-          prop: 'agent_level',
+          prop: 'level',
           label: '等级标识',
           align: 'center',
           showOverflowTooltip: true,
-          fixed: "left"
         },
         {
-          prop: 'sale_vip',
-          label: '已售数量(张)',
+          prop: 'phone',
+          label: '手机号',
+          align: 'center',
+          showOverflowTooltip: true,
+        },
+        {
+          prop: 'balance',
+          label: '总金额',
           align: 'center',
           showOverflowTooltip: true,
           minWidth: 120,
         },
         {
-          prop: 'cat_coin',
-          label: '余额',
+          prop: 'settlement_balance',
+          label: '结算中金额',
           align: 'center',
           showOverflowTooltip: true,
           minWidth: 120,
-          slot: 'cat_coin',
         },
         {
-          prop: 'create_time',
-          label: '加入代理商时间',
+          prop: 'withdrawal_balance',
+          label: '可提现金额',
           align: 'center',
           showOverflowTooltip: true,
-          minWidth: 160,
-          formatter: (row, column, cellValue) => {
-            return this.$util.toDateString(cellValue);
-          }
+          minWidth: 120,
         },
         {
-          prop: 'status',
+          prop: 'is_freeze',
           label: '状态',
           align: 'center',
           minWidth: 80,
@@ -211,27 +159,19 @@ export default {
           fixed: "right"
         }
       ],
-      // 表格搜索条件
-      where: {},
       // 表格选中数据
       selection: [],
       // 当前编辑数据
       current: null,
       // 是否显示编辑弹窗
       showEdit: false,
-      rechargevisible:false,
+      rechargevisible: false,
       // 是否显示导入弹窗
       showImport: false,
-      agentLevelOptions:null, // 创作者等级
+      agentLevelOptions: null, // 创作者等级
     };
   },
   created() {
-    // 获取等级
-    this.$http.post('/Agentlevel/getAll', {}).then(res => {
-      this.agentLevelOptions = res.data.list;
-    }).catch(e => {
-      this.$message.error(e.message);
-    });
   },
   methods: {
     showRecharge(user_id, type) {
@@ -241,7 +181,7 @@ export default {
     },
     /* 刷新表格 */
     reload() {
-      this.$refs.table.reload({where: this.where});
+      this.$refs.table.reload({ where: this.where });
     },
     /* 重置搜索 */
     reset() {
@@ -251,8 +191,8 @@ export default {
 
     /* 删除 */
     remove(row) {
-      const loading = this.$loading({lock: true});
-      this.$http.post('/agent/delete', {id: row.id}).then(res => {
+      const loading = this.$loading({ lock: true });
+      this.$http.post('/agent/delete', { id: row.id }).then(res => {
         loading.close();
         if (res.data.code === 0) {
           this.$message.success(res.data.msg);
@@ -274,11 +214,11 @@ export default {
       this.$confirm('确定要删除选中的会员吗?', '提示', {
         type: 'warning'
       }).then(() => {
-        const loading = this.$loading({lock: true});
-        this.$http.post('/agent/delete', {id: this.selection.map(d => d.id)}).then(res => {
+        const loading = this.$loading({ lock: true });
+        this.$http.post('/agent/delete', { id: this.selection.map(d => d.id) }).then(res => {
           loading.close();
           if (res.data.code === 0) {
-            this.$message({type: 'success', message: res.data.msg});
+            this.$message({ type: 'success', message: res.data.msg });
             this.reload();
           } else {
             this.$message.error(res.data.msg);
@@ -291,8 +231,8 @@ export default {
       });
     },
     /* 更改状态 */
-    editStatus(row, status=0) {
-      const loading = this.$loading({lock: true});
+    editStatus(row, status = 0) {
+      const loading = this.$loading({ lock: true });
       let params = Object.assign({
         "id": row.id,
         "status": status
@@ -300,7 +240,7 @@ export default {
       this.$http.post('/agent/status', params).then(res => {
         loading.close();
         if (res.data.code === 0) {
-          this.$message({type: 'success', message: res.data.msg});
+          this.$message({ type: 'success', message: res.data.msg });
           this.reload();
         } else {
           this.$message.error(res.data.msg);

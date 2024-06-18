@@ -20,24 +20,20 @@
         </el-row>
       </el-form>
       <!-- 数据表格 -->
-      <ele-pro-table ref="table" :where="where" :datasource="url" :columns="columns" :selection.sync="selection"
-        height="calc(100vh - 315px)">
+      <ele-pro-table :parse-data="parseData" :need-page="false" ref="table" :where="where" :datasource="url"
+        :columns="columns" :selection.sync="selection" height="calc(100vh - 315px)">
         <!-- 表头工具栏 -->
         <template slot="toolbar">
-          <el-button size="small" type="primary" icon="el-icon-plus" class="ele-btn-icon" @click="openEdit(null)"
-            v-if="permission.includes('sys:ad:add')">添加
-          </el-button>
-          <el-button size="small" type="danger" icon="el-icon-delete" class="ele-btn-icon" @click="removeBatch"
-            v-if="permission.includes('sys:ad:dall')">删除
+          <el-button size="small" type="primary" icon="el-icon-plus" class="ele-btn-icon" @click="openEdit(null)">添加
           </el-button>
         </template>
         <!-- 操作列 -->
         <template slot="action" slot-scope="{row}">
-          <el-link type="primary" :underline="false" icon="el-icon-edit" @click="openEdit(row)"
-            v-if="permission.includes('sys:ad:edit')">修改
+          <el-link type="primary" :underline="false" icon="el-icon-edit" @click="openEdit(row)">修改
           </el-link>
-          <el-link type="primary" :underline="false" icon="el-icon-view" @click="openDetail(row.id)"
-            v-if="permission.includes('sys:operlog:detail')">查看详情
+          <el-link type="primary" :underline="false" icon="el-icon-view" @click="openDetail(row.id)">查看详情
+          </el-link>
+          <el-link type="primary" :underline="false" icon="el-icon-view" @click="removeBatch(row.id)">删除
           </el-link>
         </template>
 
@@ -62,7 +58,7 @@
 
       </ele-pro-table>
       <!-- 详情弹窗 -->
-      <detail :visible.sync="showInfo" :videoid="videoid" @done="reload" />
+      <detail :visible.sync="showInfo" :id="id" @done="reload" />
       <add :visible.sync="showAdd" @done="reload" :rowdata="current" />
     </el-card>
   </div>
@@ -77,28 +73,21 @@ export default {
   name: 'TranscodingPanel',
   components: { detail, add },
   props: {
-    sectionStatusOptions: {
-      type: Array,
-      default: function () {
-        return [];
-      }
-    }
   },
   data() {
     return {
       // 是否显示查看弹窗
       showInfo: false,
       showAdd: false,
-      videoid: 0,
-      showType: '3',
+      id: 0,
       // 表格搜索条件
-      where: { 'video_type': 2, 'show_type': 3 },
+      where: { 'currentPage': 1, 'pageSize': 10, "platformType": 2 },
       dialogVisible: false,
       batchReviewVisible: false,
       batchReviewIds: '',
       toExamineId: 0,
       // 表格数据接口
-      url: '/video/index',
+      url: '/backend/card/list',
       activeTab: '2',
       // 表格列配置
       columns: [
@@ -152,15 +141,12 @@ export default {
           showOverflowTooltip: true,
         },
         {
-          prop: 'create_time',
+          prop: 'createTime',
           label: '创建时间',
           sortable: 'custom',
           showOverflowTooltip: true,
           minWidth: 160,
           align: 'center',
-          formatter: (row, column, cellValue) => {
-            return this.$util.toDateString(cellValue);
-          }
         },
         {
           columnKey: 'action',
@@ -186,6 +172,14 @@ export default {
 
   },
   methods: {
+    /* 解析接口返回数据 */
+    parseData(res) {
+      console.log(res, 'res');
+      return {
+        data: res.data.cardList,
+        code: 0
+      };
+    },
     openAdd() {
       this.showAdd = true;
     },
@@ -194,8 +188,8 @@ export default {
       this.showAdd = true;
     },
     /* 详情 */
-    openDetail(videoid) {
-      this.videoid = videoid;
+    openDetail(id) {
+      this.id = id;
       this.showInfo = true;
     },
     getTagClass() {
@@ -204,7 +198,6 @@ export default {
     },
     /* 刷新表格 */
     reload() {
-      this.where.show_type = this.showType;
       this.$refs.table.reload({ where: this.where });
     },
     /* 重置搜索 */
@@ -214,49 +207,37 @@ export default {
     },
     /* 上下架 */
     set_lower_2(row) {
-      this.$prompt('请输入下架原因', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /\S+/,
-        inputErrorMessage: '请输入下架原因'
-      }).then(({ value }) => {
+      const loading = this.$loading({ lock: true });
+      this.$http.post('/backend/card/update', row).then(res => {
+        loading.close();
+        if (res.data.code === 0) {
+          this.$message.success(res.data.msg);
+          this.reload();
+        } else {
+          this.$message.error(res.data.msg);
+        }
+      }).catch(e => {
+        loading.close();
+        this.$message.error(e.message);
+      });
+    },
+    /* 批量删除 */
+    removeBatch(id) {
+      this.$confirm('确定要删除选中的产品吗?', '提示', { type: 'warning' }).then(() => {
         const loading = this.$loading({ lock: true });
-        this.$http.post('/video/setLower', { id: row.id, lower_reason: value, is_lower: 2 }).then(res => {
+        this.$http.post('/backend/card/delete', { id }).then(res => {
           loading.close();
-          if (res.data.code === 0) {
-            this.$message.success(res.data.msg);
+          console.log(res, 'res');
+          if (res.data) {
+            this.$message.success('删除成功');
             this.reload();
           } else {
-            this.$message.error(res.data.msg);
+            this.$message.error(res.data.errno);
           }
         }).catch(e => {
           loading.close();
           this.$message.error(e.message);
         });
-      });
-    },
-    /* 批量删除 */
-    removeBatch() {
-      if (!this.selection.length) {
-        this.$message.error('请至少选择一条数据');
-        return;
-      }
-      this.$confirm('确定要删除选中的视频吗?', '提示', {
-        type: 'warning'
-      }).then(() => {
-        // const loading = this.$loading({ lock: true });
-        // this.$http.post('/video/delete', { id: this.selection.map(d => d.id) }).then(res => {
-        //   loading.close();
-        //   if (res.data.code === 0) {
-        //     this.$message.success(res.data.msg);
-        //     this.reload();
-        //   } else {
-        //     this.$message.error(res.data.msg);
-        //   }
-        // }).catch(e => {
-        //   loading.close();
-        //   this.$message.error(e.message);
-        // });
       }).catch(() => { });
     },
   }

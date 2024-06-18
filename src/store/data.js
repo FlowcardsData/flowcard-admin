@@ -1,10 +1,10 @@
-import Vue from 'vue';
+// import Vue from 'vue';
 // 根据字典类型查询字典数据信息
-export function getDicts(dictType) {
-return Vue.axios.get('/Dictdata/getDictByCode/',{params: {'code':dictType}}).then(res => {       
-    return res.data
-    });   
-}
+// export function getDicts(dictType) {
+// return Vue.axios.get('/Dictdata/getDictByCode/',{params: {'code':dictType}}).then(res => {       
+//     return res.data
+//     });   
+// }
 // 回显数据字典
 export function selectDictLabel(datas, value) {
 	var actions = [];

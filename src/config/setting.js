@@ -37,7 +37,7 @@ export default {
     return result;
   },
   // token传递的header名称
-  tokenHeaderName: 'Authorization',
+  tokenHeaderName: 'token',
   // token存储的名称
   tokenStoreName: 'admin_access_token',
   // 用户信息存储的名称

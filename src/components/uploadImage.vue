@@ -128,7 +128,7 @@ export default {
     add_img(event) {
       let file = event.target.files[0];
       if (/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(event.target.value)) {
-        let MAXSIZE = 1 * 1024 * 1024;
+        let MAXSIZE = 10 * 1024 * 1024;
         let size = file.size;
         if (size > MAXSIZE) {
           event.target.value = "";
@@ -153,10 +153,10 @@ export default {
               fileItem = self.dataURItoBlob(base);
             }
             let formdata = new window.FormData();
-            formdata.append("file", fileItem);
+            formdata.append("image", fileItem);
             axios({
               method: "POST",
-              url: "/upload/uploadImage/",
+              url: "/upload/image",
               data: formdata,
               timeout: 1000000,
               headers: {

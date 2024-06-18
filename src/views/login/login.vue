@@ -1,46 +1,19 @@
 <template>
   <div :class="['login-wrapper', ['', 'login-form-right', 'login-form-left'][direction]]">
-    <el-form
-      ref="form"
-      size="large"
-      :model="form"
-      :rules="rules"
-      class="login-form ele-bg-white"
+    <el-form ref="form" size="large" :model="form" :rules="rules" class="login-form ele-bg-white"
       @keyup.enter.native="doSubmit">
       <h4>卡号平台</h4>
-      <el-form-item prop="username">
-        <el-input
-          clearable
-          v-model="form.username"
-          prefix-icon="el-icon-user"
-          :placeholder="'账号'"/>
+      <el-form-item prop="userName">
+        <el-input clearable v-model="form.userName" prefix-icon="el-icon-user" :placeholder="'账号'" />
       </el-form-item>
       <el-form-item prop="password">
-        <el-input
-          show-password
-          v-model="form.password"
-          prefix-icon="el-icon-lock"
-          :placeholder="'密码'"/>
-      </el-form-item>
-      <el-form-item prop="captcha">
-        <div class="login-input-group">
-          <el-input
-            clearable
-            v-model="form.captcha"
-            prefix-icon="el-icon-_vercode"
-            :placeholder="$t('login.captcha')"/>
-        </div>
+        <el-input show-password v-model="form.password" prefix-icon="el-icon-lock" :placeholder="'密码'" />
       </el-form-item>
       <div class="el-form-item">
         <el-checkbox v-model="form.remember">{{ $t('login.remember') }}</el-checkbox>
       </div>
       <div class="el-form-item">
-        <el-button
-          size="large"
-          type="primary"
-          class="login-btn"
-          :loading="loading"
-          @click="doSubmit">
+        <el-button size="large" type="primary" class="login-btn" :loading="loading" @click="doSubmit">
           {{ loading ? $t('login.loading') : $t('login.login') }}
         </el-button>
       </div>
@@ -50,6 +23,7 @@
 
 <script>
 import setting from '@/config/setting';
+import request from '@/utils/request'
 
 export default {
   name: 'Login',
@@ -60,7 +34,6 @@ export default {
       loading: false,
       // 表单数据
       form: {},
-      captcha: '',
       text: ''
     };
   },
@@ -68,11 +41,11 @@ export default {
     // 表单验证规则
     rules() {
       return {
-        username: [
-          {required: true, message: this.$t('login.username'), type: 'string', trigger: 'blur'}
+        userName: [
+          { required: true, message: this.$t('login.userName'), type: 'string', trigger: 'blur' }
         ],
         password: [
-          {required: true, message: this.$t('login.password'), type: 'string', trigger: 'blur'}
+          { required: true, message: this.$t('login.password'), type: 'string', trigger: 'blur' }
         ],
       };
     },
@@ -94,22 +67,25 @@ export default {
           return false;
         }
         this.loading = true;
-        this.$http.post('/login/login', this.form).then((res) => {
+        request({
+          url: 'backend/login',
+          method: 'post',
+          data: this.form
+        }).then((res) => {
           this.loading = false;
-          if (res.data.code === 0) {
+          console.log(res, 'res');
+          if (res.data) {
             this.$message.success('登录成功');
             this.$store.dispatch('user/setToken', {
-              token: 'Bearer ' + res.data.data.access_token,
+              token: res.data,
               remember: this.form.remember
             }).then(() => {
               this.goHome();
             });
-          } else {
-            this.$message.error(res.data.msg);
-            // 重新刷新验证码
-            this.changeCode()
+          }else{
+            this.$message.error(res.errno);
           }
-        });
+        })
       });
     },
     /* 跳转到首页 */
@@ -119,30 +95,6 @@ export default {
       this.$router.push(path).catch(() => {
       });
     },
-    /* 更换图形验证码 */
-    changeCode() {
-      // 这里演示的验证码是后端返回base64格式的形式, 如果后端地址直接是图片请参考忘记密码页面
-      this.$http.get('/login/captcha').then(res => {
-        if (res.data.code === 0) {
-          this.captcha = res.data.data.captcha;
-          this.form.key = res.data.data.key;
-          // // 实际项目后端一般会返回验证码的key而不是直接返回验证码的内容, 登录用key去验证, 可以根据自己后端接口修改
-          // this.text = res.data.text;
-          // // 自动回填验证码, 实际项目去掉这个
-          // this.form.code = this.text;
-          this.$refs.form.clearValidate();
-        } else {
-          this.$message.error(res.data.msg);
-        }
-      }).catch((e) => {
-        this.$message.error(e.message);
-      });
-    },
-    /* 切换语言 */
-    changeLanguage(lang) {
-      this.$i18n.locale = lang;
-      localStorage.setItem('i18n-lang', lang);
-    }
   }
 }
 </script>
@@ -195,7 +147,7 @@ export default {
   margin: 0 0 25px 0;
 }
 
-.login-form > .el-form-item {
+.login-form>.el-form-item {
   margin-bottom: 25px;
 }
 
@@ -207,16 +159,6 @@ export default {
 
 .login-input-group ::v-deep .el-input {
   flex: 1;
-}
-
-.login-captcha {
-  height: 38px;
-  width: 102px;
-  margin-left: 10px;
-  border-radius: 4px;
-  border: 1px solid #DCDFE6;
-  text-align: center;
-  cursor: pointer;
 }
 
 .login-captcha:hover {
@@ -279,6 +221,7 @@ export default {
 }
 
 @media screen and (max-width: 768px) {
+
   .login-form-right .login-form,
   .login-form-left .login-form {
     left: 50%;

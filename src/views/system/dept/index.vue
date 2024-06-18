@@ -227,9 +227,9 @@ export default {
     };
   },
   created() {    
-    this.getDicts("organization_type").then(response => {      
-      this.organizationType = response.data;
-    });   
+    // this.getDicts("organization_type").then(response => {      
+    //   this.organizationType = response.data;
+    // });   
   },
   methods: {
     // 任务组名字典翻译
